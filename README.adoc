@@ -1,0 +1,52 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+= Alloyiser
+Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+:toc: left
+:icons: font
+
+== What Is This?
+
+Alloyiser extracts formal models from **OpenAPI specs, database schemas,
+and protocol definitions** — then checks them for invariant violations
+using Alloy before any code is written.
+
+Alloy is lightweight formal modelling that finds design bugs early.
+Alloyiser makes it accessible to API and database designers.
+
+== How It Works
+
+Point Alloyiser at your OpenAPI spec or schema (or write `alloyiser.toml`). Alloyiser:
+
+1. Extracts entities, relationships, and constraints
+2. Generates Alloy models with safety invariants
+3. Runs the Alloy Analyzer to find counterexamples
+4. Reports design violations with concrete scenarios
+
+== Key Value
+
+* **Find API design bugs before writing code**
+* **Database schema verification** — detect impossible states
+* **Protocol specification checking** — verify handshakes and state machines
+
+== Architecture
+
+Follows the hyperpolymath -iser pattern (same as https://github.com/hyperpolymath/chapeliser[Chapeliser]):
+
+* **Manifest** (`alloyiser.toml`) — describe WHAT you want
+* **Idris2 ABI** (`src/abi/`) — formal proofs of interface correctness
+* **Zig FFI** (`ffi/zig/`) — C-ABI bridge to target language runtime
+* **Codegen** (`src/codegen/`) — generates target language wrapper code
+* **Rust CLI** — parses manifest, validates, generates, builds, runs
+
+User writes zero target language code. Alloyiser generates everything.
+
+Part of the https://github.com/hyperpolymath/iseriser[-iser family] of acceleration frameworks.
+
+== Status
+
+**Pre-alpha.** Architecture defined, scaffolding in place, codegen pending.
+
+== License
+
+SPDX-License-Identifier: PMPL-1.0-or-later
