@@ -4,48 +4,266 @@
 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 :toc: left
 :icons: font
+:source-highlighter: rouge
 
-== What Is This?
+== What Is Alloyiser?
 
-Alloyiser extracts formal models from **OpenAPI specs, database schemas,
-and protocol definitions** — then checks them for invariant violations
-using Alloy before any code is written.
+Alloyiser takes **API specifications** (OpenAPI 3.x, GraphQL schemas, gRPC `.proto` files)
+and extracts their entity relationships into **Alloy 6 formal models** — then runs the
+https://alloytools.org[Alloy Analyzer] to find design bugs _before any implementation code exists_.
 
-Alloy is lightweight formal modelling that finds design bugs early.
-Alloyiser makes it accessible to API and database designers.
+https://en.wikipedia.org/wiki/Alloy_(specification_language)[Alloy] is a lightweight formal
+modelling language created by Daniel Jackson at MIT. It uses **relational logic** and **SAT solving**
+to exhaustively search for counterexamples to declared invariants. If your API spec says "every
+order must have a customer" but there exists a reachable state where an orphaned order can appear,
+Alloy will find it and show you the concrete scenario.
 
-== How It Works
-
-Point Alloyiser at your OpenAPI spec or schema (or write `alloyiser.toml`). Alloyiser:
-
-1. Extracts entities, relationships, and constraints
-2. Generates Alloy models with safety invariants
-3. Runs the Alloy Analyzer to find counterexamples
-4. Reports design violations with concrete scenarios
-
-== Key Value
-
-* **Find API design bugs before writing code**
-* **Database schema verification** — detect impossible states
-* **Protocol specification checking** — verify handshakes and state machines
-
-== Architecture
-
-Follows the hyperpolymath -iser pattern (same as https://github.com/hyperpolymath/chapeliser[Chapeliser]):
-
-* **Manifest** (`alloyiser.toml`) — describe WHAT you want
-* **Idris2 ABI** (`src/abi/`) — formal proofs of interface correctness
-* **Zig FFI** (`ffi/zig/`) — C-ABI bridge to target language runtime
-* **Codegen** (`src/codegen/`) — generates target language wrapper code
-* **Rust CLI** — parses manifest, validates, generates, builds, runs
-
-User writes zero target language code. Alloyiser generates everything.
+Alloyiser makes this power accessible: you point it at your spec files, declare invariants in
+`alloyiser.toml`, and get a counterexample report — no Alloy expertise required.
 
 Part of the https://github.com/hyperpolymath/iseriser[-iser family] of acceleration frameworks.
 
+== Key Value
+
+* **Find API design bugs before writing code** — race conditions, impossible states, orphaned resources
+* **Database schema verification** — detect unreachable states and constraint violations
+* **Protocol state machine validation** — verify handshakes, transitions, and liveness properties
+* **Microservice contract checking** — prove that service A's expectations match service B's guarantees
+* **CI/CD gate** — fail a pull request if Alloy finds a counterexample in the spec
+
+== Architecture
+
+----
+                           alloyiser pipeline
+                           ==================
+
+ ┌──────────────┐    ┌─────────────┐    ┌───────────────────┐
+ │  OpenAPI 3.x │    │  GraphQL    │    │  gRPC .proto      │
+ │  spec.yaml   │    │  schema.gql │    │  service.proto    │
+ └──────┬───────┘    └──────┬──────┘    └────────┬──────────┘
+        │                   │                    │
+        └───────────┬───────┘────────────────────┘
+                    │
+                    ▼
+        ┌───────────────────────┐
+        │   Spec Parser         │  Rust: extract entities, fields,
+        │   (src/core/)         │  relationships, constraints
+        └───────────┬───────────┘
+                    │
+                    ▼
+        ┌───────────────────────┐
+        │   Relation Extractor  │  entities → Alloy signatures
+        │   (src/bridges/)      │  fields   → Alloy relations
+        └───────────┬───────────┘  constraints → Alloy facts
+                    │
+                    ▼
+        ┌───────────────────────┐
+        │   Idris2 ABI          │  Proves: model extraction
+        │   (src/interface/abi/)│  preserves spec semantics
+        └───────────┬───────────┘
+                    │
+                    ▼
+        ┌───────────────────────┐
+        │   Alloy Codegen       │  Generates .als files with:
+        │   (src/codegen/)      │  sig, field, fact, pred, assert
+        └───────────┬───────────┘
+                    │
+                    ▼
+        ┌───────────────────────┐
+        │   Alloy Analyzer      │  SAT solving via Kodkod/SAT4J
+        │   (alloy6.jar)        │  bounded model checking
+        └───────────┬───────────┘
+                    │
+                    ▼
+        ┌───────────────────────┐
+        │   Counterexample      │  Human-readable violation report
+        │   Report              │  with concrete state instances
+        └───────────────────────┘
+----
+
+== Alloy Concepts (Quick Reference)
+
+Alloyiser generates these Alloy constructs from your API specs:
+
+[cols="1,2,2"]
+|===
+| Alloy Construct | What It Means | Extracted From
+
+| `sig` (Signature)
+| An entity type — like a class or table
+| OpenAPI schema objects, GraphQL types, protobuf messages
+
+| `field`
+| A relation between signatures
+| Object properties, field types, foreign keys
+
+| `fact`
+| An invariant that must always hold
+| Required fields, uniqueness constraints, enum restrictions
+
+| `pred` (Predicate)
+| A reusable named constraint
+| API operation pre/post conditions
+
+| `assert` (Assertion)
+| A property to verify
+| User-declared invariants in `alloyiser.toml`
+
+| `check`
+| Run SAT solver to find counterexamples to an assertion
+| Automatic: one check per assertion
+
+| `run`
+| Generate a satisfying instance
+| Automatic: used to visualise valid states
+|===
+
+== How It Works
+
+=== 1. Create a manifest
+
+[source,toml]
+----
+# alloyiser.toml — point at your spec, declare what to verify
+
+[workload]
+name = "pet-store-api"
+entry = "specs/petstore.yaml"
+strategy = "openapi"
+
+[data]
+input-type = "OpenAPI3"
+output-type = "AlloyModel"
+
+[invariants]
+# Declare properties your API should satisfy:
+no-orphaned-pets = "all p: Pet | some p.owner"
+unique-pet-ids   = "all disj p1, p2: Pet | p1.id != p2.id"
+valid-status     = "all p: Pet | p.status in Available + Pending + Sold"
+
+[options]
+scope = 5            # Check up to 5 instances of each entity
+alloy-jar = "lib/alloy6.jar"
+output-dir = "generated/alloy"
+----
+
+=== 2. Generate and check
+
+[source,bash]
+----
+# Initialise a new manifest in the current directory
+alloyiser init
+
+# Validate the manifest
+alloyiser validate -m alloyiser.toml
+
+# Generate Alloy models from the spec
+alloyiser generate -m alloyiser.toml -o generated/alloy
+
+# Run the Alloy Analyzer (finds counterexamples)
+alloyiser run -m alloyiser.toml
+
+# Show manifest summary
+alloyiser info -m alloyiser.toml
+----
+
+=== 3. Read the report
+
+Alloyiser produces a counterexample report showing concrete states that violate your invariants.
+For example:
+
+----
+VIOLATION: no-orphaned-pets
+  Counterexample found (scope 5):
+    Pet$0 = { id: 1, name: "Fido", status: Available, owner: none }
+  Explanation:
+    The OpenAPI spec allows creating a Pet without an owner field
+    (owner is not in the `required` array). This violates the invariant
+    that every Pet must have an owner.
+  Fix: Add "owner" to the required fields in the Pet schema.
+----
+
+== Use Cases
+
+**Microservice contract verification**::
+  Two services agree on a shared schema. Alloyiser checks that the producer's guarantees
+  satisfy the consumer's expectations — catching mismatches before integration testing.
+
+**Database schema consistency**::
+  Extract entity-relationship constraints from your migration files or ORM definitions.
+  Verify referential integrity, cardinality constraints, and state machine transitions.
+
+**Protocol state machine validation**::
+  Model a multi-step protocol (OAuth flow, payment processing, order lifecycle) as an
+  Alloy state machine. Check liveness ("the order eventually reaches a terminal state")
+  and safety ("a refund cannot exceed the original charge").
+
+**API evolution safety**::
+  When adding fields or endpoints, regenerate the Alloy model and re-check. Alloyiser
+  detects regressions: "adding optional field X breaks invariant Y."
+
+== CLI Commands
+
+[cols="1,2"]
+|===
+| Command | Description
+
+| `alloyiser init`
+| Create a new `alloyiser.toml` manifest in the current directory
+
+| `alloyiser validate`
+| Parse and validate the manifest (checks structure, not semantics)
+
+| `alloyiser generate`
+| Extract entities from the spec and generate `.als` Alloy model files
+
+| `alloyiser build`
+| Compile generated artifacts (Alloy model + Zig FFI bridge)
+
+| `alloyiser run`
+| Run the Alloy Analyzer against the generated models
+
+| `alloyiser info`
+| Display a summary of the manifest configuration
+|===
+
+== Building
+
+[source,bash]
+----
+# Build
+cargo build --release
+
+# Test
+cargo test
+
+# Full quality check (format + lint + test)
+just quality
+
+# Pre-commit scan
+just assail
+----
+
+Requires:
+
+* **Rust** (nightly, via asdf)
+* **Alloy 6** JAR for analyzer integration (Phase 3+)
+* **Idris2** for ABI proofs (Phase 5+)
+* **Zig** for FFI bridge (Phase 5+)
+
 == Status
 
-**Pre-alpha.** Architecture defined, scaffolding in place, codegen pending.
+**Pre-alpha (scaffold phase).** The CLI skeleton, manifest parser, and project structure are
+in place. Code generation and Alloy Analyzer integration are pending — see link:ROADMAP.adoc[ROADMAP]
+for the implementation plan.
+
+What exists today:
+
+* Rust CLI with `init`, `validate`, `generate`, `build`, `run`, `info` subcommands
+* TOML manifest parser and validator
+* Codegen stub (ready for Alloy `.als` generation)
+* Idris2 ABI type definitions (template — being specialised for Alloy model types)
+* Full RSR infrastructure: 17 CI/CD workflows, Containerfile, Justfile, governance docs
 
 == License
 

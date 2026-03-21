@@ -1,32 +1,102 @@
 // SPDX-License-Identifier: PMPL-1.0-or-later
-= alloyiser Roadmap
+// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+= Alloyiser Roadmap
+Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 :toc:
 :icons: font
 
 == Phase 0: Scaffold (COMPLETE)
-* [x] RSR template with full CI/CD
-* [x] CLI with subcommands
-* [x] Manifest parser
-* [x] Codegen stubs
-* [x] ABI module stubs
-* [x] README with architecture
 
-== Phase 1: Core Implementation
-* [ ] Implement target-language-specific code generation
-* [ ] Write Idris2 ABI proofs for core invariants
-* [ ] Build Zig FFI bridge
-* [ ] First working end-to-end example
-* [ ] Integration tests
+* [x] RSR template with full CI/CD (17 workflows)
+* [x] Rust CLI with `init`, `validate`, `generate`, `build`, `run`, `info` subcommands
+* [x] TOML manifest parser and validator (`alloyiser.toml`)
+* [x] Codegen stub module
+* [x] Idris2 ABI type stubs (`src/interface/abi/`)
+* [x] Zig FFI directory structure (`src/interface/ffi/`)
+* [x] Containerfile, Justfile, governance docs
+* [x] README with architecture overview
 
-== Phase 2: Polish
-* [ ] Error messages and diagnostics
-* [ ] Shell completions (bash, zsh, fish)
-* [ ] CI/CD for the generated artifacts
-* [ ] Performance benchmarks
-* [ ] Additional examples
+== Phase 1: OpenAPI Parser
 
-== Phase 3: Ecosystem
-* [ ] PanLL panel integration
-* [ ] BoJ-server cartridge
-* [ ] VeriSimDB backing store for results
-* [ ] Publish to crates.io
+Extract the raw material from OpenAPI 3.x specifications.
+
+* [ ] Parse OpenAPI 3.x YAML/JSON via `openapiv3` crate
+* [ ] Extract schema objects as entity candidates (each `#/components/schemas/*` becomes a potential `sig`)
+* [ ] Extract properties as relation candidates (each property becomes a potential `field`)
+* [ ] Extract `required` arrays as fact candidates (required field -> Alloy `fact` that field is non-empty)
+* [ ] Extract `enum` values as abstract sig hierarchies
+* [ ] Extract `$ref` relationships as Alloy relations between signatures
+* [ ] Extract path parameters and response schemas for operation modelling
+* [ ] Build intermediate representation: `SpecModel { entities, relations, constraints }`
+* [ ] Unit tests against real-world OpenAPI specs (Petstore, Stripe subset, GitHub API subset)
+
+== Phase 2: Alloy Codegen
+
+Generate valid Alloy 6 `.als` model files from the intermediate representation.
+
+* [ ] `sig` generation: one Alloy signature per extracted entity
+* [ ] `field` generation: typed relations between signatures (one/lone/set/seq multiplicity)
+* [ ] `fact` generation: invariants from required fields, uniqueness, enum constraints
+* [ ] `pred` generation: reusable predicates for common patterns (CRUD operations, state transitions)
+* [ ] `assert` generation: user-declared invariants from `[invariants]` section of `alloyiser.toml`
+* [ ] `check` command generation: one check per assertion, with configurable scope
+* [ ] `run` command generation: generate satisfying instances for visualisation
+* [ ] Template engine: Handlebars templates for `.als` file structure
+* [ ] Pretty-printer: readable, well-commented Alloy output
+* [ ] Round-trip test: parse spec -> generate .als -> verify .als parses as valid Alloy
+
+== Phase 3: Analyzer Integration
+
+Run the Alloy Analyzer and parse its output into human-readable reports.
+
+* [ ] JVM subprocess management: spawn `java -jar alloy6.jar` with model file
+* [ ] Alloy API integration: use Alloy's Java API in headless mode (no GUI)
+* [ ] Parse Alloy Analyzer XML output (counterexample instances)
+* [ ] Map counterexample atoms back to original spec entities (Pet$0 -> Pet schema)
+* [ ] Generate human-readable violation report with:
+  ** Which invariant was violated
+  ** The concrete counterexample state
+  ** Which part of the original spec allows the violation
+  ** Suggested fix (when deterministic)
+* [ ] Exit code: 0 = no violations, 1 = violations found, 2 = error
+* [ ] Machine-readable JSON output for CI/CD pipelines
+* [ ] Configurable scope (default: 5 instances per signature)
+* [ ] Timeout handling for large models
+
+== Phase 4: Multi-Format Support
+
+Extend beyond OpenAPI to other specification formats.
+
+* [ ] **GraphQL schema** (`.gql`/`.graphql`): types -> sigs, fields -> relations, non-null -> facts
+* [ ] **gRPC `.proto`**: messages -> sigs, repeated/optional -> multiplicity, oneof -> abstract sigs
+* [ ] **JSON Schema**: `$ref`, `anyOf`/`oneOf`/`allOf` -> Alloy union/intersection types
+* [ ] **AsyncAPI**: event-driven API models with channel/message constraints
+* [ ] Format auto-detection from file extension and content sniffing
+* [ ] Unified `SpecModel` intermediate representation shared across all parsers
+* [ ] Cross-format verification: check that a GraphQL schema and its backing REST API agree
+
+== Phase 5: Idris2 Proofs
+
+Formal proof that model extraction preserves specification semantics.
+
+* [ ] Replace template ABI types with Alloy-specific types:
+  ** `Signature`, `Field`, `Fact`, `Assertion`, `Scope`, `Multiplicity`
+* [ ] Prove: every `required` field in the spec becomes a non-empty fact in the model
+* [ ] Prove: `$ref` relationships are faithfully represented as Alloy relations
+* [ ] Prove: enum constraints map to exact abstract sig hierarchies
+* [ ] Prove: the generated model is _at least as constrained_ as the spec (soundness)
+* [ ] Prove: scope bounds are sufficient to detect violations up to N entities (completeness within scope)
+* [ ] Zig FFI bridge: call Alloy Analyzer from Rust via C ABI with verified argument passing
+
+== Phase 6: Ecosystem Integration
+
+Make alloyiser useful in real development workflows.
+
+* [ ] **BoJ cartridge**: `boj cartridge invoke alloyiser --spec petstore.yaml`
+* [ ] **CI/CD action**: GitHub Action that fails PR if counterexamples found
+* [ ] **PanLL panel**: visualise Alloy instance graphs in the PanLL workspace
+* [ ] **VeriSimDB**: store verification results with temporal queries ("when did this invariant start failing?")
+* [ ] **Watch mode**: re-run on spec file changes (useful during API design sessions)
+* [ ] **Diff mode**: compare two spec versions, show new/removed/changed invariants
+* [ ] **crates.io publish**: `cargo install alloyiser`
+* [ ] **Nix/Guix packages**: reproducible builds via flake.nix and guix.scm
