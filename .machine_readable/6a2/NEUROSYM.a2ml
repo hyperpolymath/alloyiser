@@ -1,12 +1,11 @@
 # SPDX-License-Identifier: PMPL-1.0-or-later
 # Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
 #
-# NEUROSYM.a2ml — Neurosymbolic integration metadata
-# Configuration for Hypatia scanning and symbolic reasoning.
+# NEUROSYM.a2ml — Neurosymbolic integration metadata for alloyiser
 
 [metadata]
 version = "0.1.0"
-last-updated = "{{CURRENT_DATE}}"
+last-updated = "2026-03-21"
 
 [hypatia-config]
 scan-enabled = true
@@ -14,8 +13,12 @@ scan-depth = "standard"  # quick | standard | deep
 report-format = "logtalk"
 
 [symbolic-rules]
-# Custom symbolic rules for this project
+# Alloyiser-specific symbolic rules:
 # - { name = "no-unsafe-ffi", pattern = "believe_me|unsafeCoerce", severity = "critical" }
+# - { name = "no-raw-alloy-atoms-in-output", pattern = "\\$\\d+", severity = "warning" }
+#   Counterexample atoms (Pet$0) must be mapped to spec entity names before display.
+# - { name = "scope-bound-check", pattern = "scope\\s*=\\s*0", severity = "error" }
+#   Scope bound of 0 is meaningless — Alloy needs at least 1 instance per sig.
 
 [neural-config]
 # Neural pattern detection settings

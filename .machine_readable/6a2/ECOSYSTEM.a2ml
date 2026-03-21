@@ -6,12 +6,14 @@
   (version "0.1.0")
   (name "alloyiser")
   (type "tool")
-  (purpose "Extract formal models from API specs and verify with Alloy")
+  (purpose "Extract formal models from API specifications (OpenAPI, GraphQL, gRPC) and verify invariants using the Alloy Analyzer's SAT solver")
 
   (position-in-ecosystem
     (family "-iser acceleration frameworks")
     (meta-framework "iseriser")
     (relationship "sibling")
+    (domain "formal verification of API designs")
+    (unique-value "bridges API specification formats to Alloy's relational logic — finds design bugs before implementation")
     (top-3 ("typedqliser" "chapeliser" "verisimiser")))
 
   (related-projects
@@ -32,7 +34,23 @@
       (description "Database recovery via constraint propagation"))
     (project "proven"
       (relationship "dependency")
-      (description "Shared Idris2 verified library"))
+      (description "Shared Idris2 verified library — alloyiser uses proven types for model soundness proofs"))
     (project "typell"
       (relationship "dependency")
-      (description "Type theory engine"))))
+      (description "Type theory engine — could power alloyiser's constraint language"))
+    (project "boj-server"
+      (relationship "integration-target")
+      (description "BoJ MCP server — alloyiser will be a cartridge for on-demand spec verification"))
+    (project "panll"
+      (relationship "integration-target")
+      (description "PanLL workspace — alloyiser will provide a panel for visualising Alloy instance graphs")))
+
+  (external-dependencies
+    (dependency "alloy6"
+      (type "runtime")
+      (description "MIT Alloy 6 Analyzer JAR — SAT solving via Kodkod/SAT4J")
+      (url "https://alloytools.org"))
+    (dependency "openapiv3"
+      (type "build")
+      (description "Rust crate for parsing OpenAPI 3.x specifications")
+      (url "https://crates.io/crates/openapiv3"))))

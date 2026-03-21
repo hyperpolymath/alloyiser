@@ -4,38 +4,53 @@
 
 (meta
   (version "0.1.0")
-  (last-updated "2026-03-20")
+  (last-updated "2026-03-21")
 
   (architecture-decisions
-    (adr "001-iser-pattern"
+    (adr "001-alloy-as-backend"
       (status "accepted")
-      (context "Need to make powerful languages accessible without steep learning curves")
-      (decision "Use manifest-driven code generation: user describes WHAT, tool generates HOW")
-      (consequences "Users write zero target language code; all complexity in the -iser"))
+      (context "Need a formal verification backend that can find design bugs in API specs without requiring user expertise in formal methods")
+      (decision "Use Alloy 6 (MIT, Daniel Jackson) — relational logic with SAT solving via Kodkod/SAT4J for bounded model checking")
+      (consequences "Alloy is well-established, has a Java API for headless use, and can exhaustively check small scopes. Requires JVM dependency for analyzer."))
 
-    (adr "002-abi-ffi-standard"
+    (adr "002-spec-to-model-pipeline"
       (status "accepted")
-      (context "Need verified interop between Rust CLI, target language, and user code")
-      (decision "Idris2 ABI for formal proofs, Zig FFI for C-ABI bridge")
-      (consequences "Compile-time correctness guarantees; zero runtime overhead from proofs"))
+      (context "Need to transform API specifications into Alloy models without requiring users to learn Alloy syntax")
+      (decision "Pipeline: spec file -> parser -> SpecModel IR -> Alloy codegen -> .als files. Users declare invariants in TOML, alloyiser generates all Alloy code")
+      (consequences "Users never write Alloy directly. Alloyiser maps OpenAPI concepts (schemas, required, refs) to Alloy concepts (sigs, facts, relations) automatically."))
 
-    (adr "003-rsr-template"
+    (adr "003-iser-pattern"
       (status "accepted")
-      (context "Need consistent project structure across 29+ -iser repos")
-      (decision "All repos cloned from rsr-template-repo with full CI/CD and governance")
-      (consequences "17 workflows, SECURITY.md, CONTRIBUTING, bot directives from day one")))
+      (context "Need consistent architecture across the -iser family")
+      (decision "Use manifest-driven code generation: user describes WHAT in alloyiser.toml, tool generates HOW")
+      (consequences "Users write zero Alloy code; all complexity in alloyiser. Same pattern as chapeliser, typedqliser, etc."))
+
+    (adr "004-abi-ffi-standard"
+      (status "accepted")
+      (context "Need verified interop between Rust CLI, Alloy Analyzer (JVM), and user toolchain")
+      (decision "Idris2 ABI for formal proofs of model soundness, Zig FFI for C-ABI bridge")
+      (consequences "Compile-time guarantees that model extraction preserves spec semantics. JVM bridge via JNI or subprocess."))
+
+    (adr "005-counterexample-reports"
+      (status "accepted")
+      (context "Alloy Analyzer counterexamples are XML atoms — not useful to API designers")
+      (decision "Map counterexample atoms back to original spec entities and produce human-readable violation reports with suggested fixes")
+      (consequences "Counterexample 'Pet$0' gets reported as 'The OpenAPI spec allows creating a Pet without an owner field'. Actionable output.")))
 
   (development-practices
-    (language "Rust" (purpose "CLI and orchestration"))
-    (language "Idris2" (purpose "ABI formal proofs"))
-    (language "Zig" (purpose "FFI C-ABI bridge"))
+    (language "Rust" (purpose "CLI orchestration, spec parsing, report generation"))
+    (language "Idris2" (purpose "ABI formal proofs: model extraction soundness"))
+    (language "Zig" (purpose "FFI C-ABI bridge to Alloy Analyzer (JVM)"))
+    (language "Alloy" (purpose "Generated models — .als files for SAT solving"))
     (build-tool "cargo")
     (ci "GitHub Actions (17 workflows)"))
 
   (design-rationale
     (principle "Manifest-driven"
-      (explanation "User intent captured in TOML; all generation is deterministic and reproducible"))
-    (principle "Formally verified bridges"
-      (explanation "Idris2 dependent types prove interface correctness at compile time"))
-    (principle "Zero target language exposure"
-      (explanation "Users never write Chapel/Julia/Futhark/etc. — the -iser handles everything"))))
+      (explanation "User intent captured in alloyiser.toml; invariants are plain-English names mapped to Alloy expressions"))
+    (principle "Find bugs before code"
+      (explanation "API design bugs (orphaned resources, impossible states, race conditions) are cheaper to fix at spec time than implementation time"))
+    (principle "Formally verified extraction"
+      (explanation "Idris2 dependent types prove that the model extraction preserves specification semantics — the generated Alloy model is faithful to the source spec"))
+    (principle "Actionable counterexamples"
+      (explanation "Reports map Alloy atoms back to spec entities, explain the violation in domain terms, and suggest fixes"))))
