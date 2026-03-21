@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# alloyiser manifest — Blog API formal model verification
+#
+# This example demonstrates alloyiser's core workflow:
+# 1. Point at an OpenAPI spec describing a blog platform
+# 2. Define assertions (invariants) the API must satisfy
+# 3. Generate an Alloy 6 model and check for counterexamples
+#
+# Entities: User, Post, Comment
+# Invariants: no orphan posts, unique emails, comments have authors
+
+[project]
+name = "blog-api"
+
+[[specs]]
+name = "blog-api"
+source = "openapi.yaml"
+format = "openapi"
+
+[[assertions]]
+name = "no-orphan-posts"
+check = "all p: Post | some p.author"
+scope = 5
+
+[[assertions]]
+name = "unique-emails"
+check = "all disj u1, u2: User | u1.email != u2.email"
+scope = 4
+
+[[assertions]]
+name = "comments-have-authors"
+check = "all c: Comment | some c.author"
+scope = 5
+
+[[assertions]]
+name = "posts-have-titles"
+check = "all p: Post | some p.title"
+scope = 3
+
+[alloy]
+solver = "sat4j"
+max-scope = 10

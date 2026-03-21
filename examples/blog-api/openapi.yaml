@@ -1,0 +1,129 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Blog API — OpenAPI 3.0 specification for alloyiser example
+#
+# Defines a simple blog platform with three core entities:
+# - User: blog authors with unique emails
+# - Post: blog posts authored by users
+# - Comment: comments on posts, also authored by users
+#
+# This spec is consumed by alloyiser to generate an Alloy 6 formal model
+# that verifies structural invariants (e.g. no orphan posts, unique emails).
+
+openapi: "3.0.3"
+info:
+  title: Blog API
+  description: A simple blog platform with users, posts, and comments.
+  version: "1.0.0"
+  contact:
+    name: Jonathan D.A. Jewell
+    email: j.d.a.jewell@open.ac.uk
+
+paths:
+  /users:
+    get:
+      summary: List all users
+      operationId: listUsers
+      responses:
+        "200":
+          description: A list of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+    post:
+      summary: Create a new user
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        "201":
+          description: User created
+
+  /posts:
+    get:
+      summary: List all posts
+      operationId: listPosts
+      responses:
+        "200":
+          description: A list of posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+
+  /posts/{postId}/comments:
+    get:
+      summary: List comments on a post
+      operationId: listComments
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: A list of comments
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        name:
+          type: string
+        bio:
+          type: string
+      required:
+        - id
+        - email
+        - name
+
+    Post:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        body:
+          type: string
+        author:
+          $ref: '#/components/schemas/User'
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+      required:
+        - id
+        - title
+        - author
+
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+        text:
+          type: string
+        author:
+          $ref: '#/components/schemas/User'
+        post:
+          $ref: '#/components/schemas/Post'
+      required:
+        - id
+        - text
+        - author
+        - post
