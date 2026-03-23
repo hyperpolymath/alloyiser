@@ -135,8 +135,7 @@ fn default_max_scope() -> u32 {
 pub fn load_manifest(path: &str) -> Result<Manifest> {
     let content = std::fs::read_to_string(path)
         .with_context(|| format!("Failed to read manifest: {}", path))?;
-    toml::from_str(&content)
-        .with_context(|| format!("Failed to parse manifest: {}", path))
+    toml::from_str(&content).with_context(|| format!("Failed to parse manifest: {}", path))
 }
 
 /// Validate that a manifest has all required fields and sensible values.
@@ -235,10 +234,18 @@ pub fn print_info(manifest: &Manifest) {
     println!("Max scope:  {}", manifest.alloy.max_scope);
     println!();
     for spec in &manifest.specs {
-        println!("  spec '{}': {} ({})", spec.name, spec.source, format!("{:?}", spec.format).to_lowercase());
+        println!(
+            "  spec '{}': {} ({})",
+            spec.name,
+            spec.source,
+            format!("{:?}", spec.format).to_lowercase()
+        );
     }
     for assertion in &manifest.assertions {
-        println!("  assert '{}': {} [scope={}]", assertion.name, assertion.check, assertion.scope);
+        println!(
+            "  assert '{}': {} [scope={}]",
+            assertion.name, assertion.check, assertion.scope
+        );
     }
 }
 
@@ -294,7 +301,9 @@ name = "minimal"
     #[test]
     fn test_validate_empty_name() {
         let manifest = Manifest {
-            project: ProjectConfig { name: String::new() },
+            project: ProjectConfig {
+                name: String::new(),
+            },
             specs: vec![],
             assertions: vec![],
             alloy: AlloyConfig::default(),
@@ -306,7 +315,9 @@ name = "minimal"
     #[test]
     fn test_validate_scope_exceeds_max() {
         let manifest = Manifest {
-            project: ProjectConfig { name: "test".into() },
+            project: ProjectConfig {
+                name: "test".into(),
+            },
             specs: vec![],
             assertions: vec![AssertionEntry {
                 name: "big-scope".into(),

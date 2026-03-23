@@ -26,9 +26,15 @@ fn test_init_creates_manifest() {
     assert!(manifest_path.exists(), "alloyiser.toml should be created");
 
     let content = fs::read_to_string(&manifest_path).unwrap();
-    assert!(content.contains("[project]"), "Should have [project] section");
+    assert!(
+        content.contains("[project]"),
+        "Should have [project] section"
+    );
     assert!(content.contains("name ="), "Should have project name");
-    assert!(content.contains("[[specs]]"), "Should have [[specs]] section");
+    assert!(
+        content.contains("[[specs]]"),
+        "Should have [[specs]] section"
+    );
     assert!(
         content.contains("[[assertions]]"),
         "Should have [[assertions]] section"
@@ -123,10 +129,7 @@ components:
 
     // Check that analysis script was created
     let script_path = tmp.path().join("run-analysis.sh");
-    assert!(
-        script_path.exists(),
-        "Should generate run-analysis.sh"
-    );
+    assert!(script_path.exists(), "Should generate run-analysis.sh");
 }
 
 /// Test that OpenAPI entity extraction correctly identifies schemas,

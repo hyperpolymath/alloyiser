@@ -170,7 +170,8 @@ fn parse_openapi_yaml(content: &str) -> Result<OpenApiSchema> {
         }
 
         // Schema name line: "    User:" at schema_indent level
-        if current_indent == schema_indent && line.trim().ends_with(':') && !line.trim().is_empty() {
+        if current_indent == schema_indent && line.trim().ends_with(':') && !line.trim().is_empty()
+        {
             let schema_name = line.trim().trim_end_matches(':').to_string();
             i += 1;
 
@@ -258,7 +259,13 @@ fn parse_schema_definition(
         }
     }
 
-    (SchemaDefinition { properties, required }, i)
+    (
+        SchemaDefinition {
+            properties,
+            required,
+        },
+        i,
+    )
 }
 
 /// Parse the type of a single property from its YAML lines.
@@ -504,10 +511,10 @@ components:
         assert_eq!(sigs.len(), 1);
         assert_eq!(sigs[0].name, "User");
         assert_eq!(sigs[0].fields.len(), 4);
-        assert_eq!(sigs[0].fields[0].multiplicity, Multiplicity::One);     // id: required
-        assert_eq!(sigs[0].fields[1].multiplicity, Multiplicity::One);     // email: required
-        assert_eq!(sigs[0].fields[2].multiplicity, Multiplicity::Lone);    // nickname: optional
-        assert_eq!(sigs[0].fields[3].multiplicity, Multiplicity::Set);     // posts: array
+        assert_eq!(sigs[0].fields[0].multiplicity, Multiplicity::One); // id: required
+        assert_eq!(sigs[0].fields[1].multiplicity, Multiplicity::One); // email: required
+        assert_eq!(sigs[0].fields[2].multiplicity, Multiplicity::Lone); // nickname: optional
+        assert_eq!(sigs[0].fields[3].multiplicity, Multiplicity::Set); // posts: array
     }
 
     /// Verify that YAML types map to Alloy-friendly type names.

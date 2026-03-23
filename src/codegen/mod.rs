@@ -60,11 +60,17 @@ pub fn generate_all(manifest: &Manifest, output_dir: &str) -> Result<()> {
                 all_signatures.extend(sigs);
             }
             SpecFormat::Graphql => {
-                println!("  GraphQL parsing: {} (not yet implemented — Phase 2)", spec.source);
+                println!(
+                    "  GraphQL parsing: {} (not yet implemented — Phase 2)",
+                    spec.source
+                );
                 // Phase 2: GraphQL schema parsing
             }
             SpecFormat::EntityRelation => {
-                println!("  Entity-relation parsing: {} (not yet implemented — Phase 2)", spec.source);
+                println!(
+                    "  Entity-relation parsing: {} (not yet implemented — Phase 2)",
+                    spec.source
+                );
                 // Phase 2: Entity-relation format parsing
             }
         }
@@ -75,11 +81,8 @@ pub fn generate_all(manifest: &Manifest, output_dir: &str) -> Result<()> {
     println!("  Inferred {} structural facts", structural_facts.len());
 
     // Generate the Alloy model
-    let mut model = alloy_gen::generate_alloy_model(
-        &manifest.project.name,
-        &all_signatures,
-        manifest,
-    );
+    let mut model =
+        alloy_gen::generate_alloy_model(&manifest.project.name, &all_signatures, manifest);
 
     // Add inferred structural facts to the model
     for fact in structural_facts {
@@ -122,8 +125,15 @@ pub fn generate_all(manifest: &Manifest, output_dir: &str) -> Result<()> {
 /// and check the generated models. For now it validates the manifest.
 pub fn build(manifest: &Manifest, _release: bool) -> Result<()> {
     println!("Building alloyiser project: {}", manifest.project.name);
-    println!("  {} spec(s), {} assertion(s)", manifest.specs.len(), manifest.assertions.len());
-    println!("  Solver: {}, max scope: {}", manifest.alloy.solver, manifest.alloy.max_scope);
+    println!(
+        "  {} spec(s), {} assertion(s)",
+        manifest.specs.len(),
+        manifest.assertions.len()
+    );
+    println!(
+        "  Solver: {}, max scope: {}",
+        manifest.alloy.solver, manifest.alloy.max_scope
+    );
     println!("  (Automated Alloy compilation is Phase 2 — use 'generate' to create .als files)");
     Ok(())
 }

@@ -88,7 +88,10 @@ pub fn render_als_file(model: &AlloyModel, default_scope: u32) -> String {
 
     // Add a default run command for instance visualisation
     // (lets users see sample valid instances in the Alloy visualiser)
-    output.push_str(&format!("// Visualise a sample instance\nrun {{}} for {}\n", default_scope));
+    output.push_str(&format!(
+        "// Visualise a sample instance\nrun {{}} for {}\n",
+        default_scope
+    ));
 
     output
 }
@@ -156,7 +159,10 @@ fn assertion_entry_to_alloy(entry: &AssertionEntry) -> Assertion {
 ///
 /// # Returns
 /// A sorted set of primitive type names that need abstract sig declarations.
-fn collect_primitive_types(signatures: &[Signature], entity_names: &BTreeSet<&str>) -> BTreeSet<String> {
+fn collect_primitive_types(
+    signatures: &[Signature],
+    entity_names: &BTreeSet<&str>,
+) -> BTreeSet<String> {
     let mut primitives = BTreeSet::new();
     for sig in signatures {
         for field in &sig.fields {
@@ -176,7 +182,13 @@ fn collect_primitive_types(signatures: &[Signature], entity_names: &BTreeSet<&st
 fn sanitise_module_name(name: &str) -> String {
     let sanitised: String = name
         .chars()
-        .map(|c| if c.is_alphanumeric() || c == '_' { c } else { '_' })
+        .map(|c| {
+            if c.is_alphanumeric() || c == '_' {
+                c
+            } else {
+                '_'
+            }
+        })
         .collect();
     // Ensure it starts with a letter
     if sanitised.starts_with(|c: char| c.is_ascii_digit()) {
@@ -194,7 +206,13 @@ fn sanitise_module_name(name: &str) -> String {
 /// with underscores.
 fn sanitise_identifier(name: &str) -> String {
     name.chars()
-        .map(|c| if c.is_alphanumeric() || c == '_' { c } else { '_' })
+        .map(|c| {
+            if c.is_alphanumeric() || c == '_' {
+                c
+            } else {
+                '_'
+            }
+        })
         .collect()
 }
 
@@ -202,7 +220,9 @@ fn sanitise_identifier(name: &str) -> String {
 mod tests {
     use super::*;
     use crate::abi::{AlloyField, Multiplicity};
-    use crate::manifest::{AlloyConfig, AssertionEntry, Manifest, ProjectConfig, SpecEntry, SpecFormat};
+    use crate::manifest::{
+        AlloyConfig, AssertionEntry, Manifest, ProjectConfig, SpecEntry, SpecFormat,
+    };
 
     /// Helper: create a minimal manifest for testing.
     fn test_manifest() -> Manifest {
@@ -302,7 +322,11 @@ mod tests {
         let facts = infer_structural_facts(&sigs);
 
         // Post.author is `one User` → should generate an integrity fact
-        assert!(facts.iter().any(|f| f.name.as_deref() == Some("Post_author_integrity")));
+        assert!(
+            facts
+                .iter()
+                .any(|f| f.name.as_deref() == Some("Post_author_integrity"))
+        );
     }
 
     /// Verify module name sanitisation.

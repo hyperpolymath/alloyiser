@@ -360,9 +360,7 @@ mod tests {
     /// Verify that an abstract extending signature renders correctly.
     #[test]
     fn test_abstract_extends_signature() {
-        let sig = Signature::new("Admin")
-            .set_abstract()
-            .set_extends("User");
+        let sig = Signature::new("Admin").set_abstract().set_extends("User");
         let rendered = sig.to_string();
         assert!(rendered.starts_with("abstract sig Admin extends User"));
     }

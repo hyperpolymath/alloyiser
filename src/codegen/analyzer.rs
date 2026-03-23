@@ -90,8 +90,8 @@ pub fn generate_analysis_script(
     script.push_str(&format!("TIMEOUT=\"{}\"\n\n", config.timeout_seconds));
 
     script.push_str("echo \"=== alloyiser analysis ===\"\n");
-    script.push_str(&format!("echo \"Model: $MODEL\"\n"));
-    script.push_str(&format!("echo \"Solver: $SOLVER\"\n"));
+    script.push_str("echo \"Model: $MODEL\"\n");
+    script.push_str("echo \"Solver: $SOLVER\"\n");
     script.push_str(&format!(
         "echo \"Assertions: {}\"\n\n",
         assertion_names.len()
@@ -204,26 +204,23 @@ pub fn parse_counterexample_xml(xml_content: &str) -> Result<Counterexample> {
         let trimmed = line.trim();
 
         // Detect atom declarations: <atom label="User$0"/>
-        if trimmed.starts_with("<atom") && trimmed.contains("label=") {
-            if let Some(label) = extract_xml_attr(trimmed, "label") {
-                // If we were tracking a previous atom, save it
-                if let (Some(atom), Some(sig)) = (&current_atom, &current_sig) {
-                    bindings.push(AtomBinding {
-                        atom: atom.clone(),
-                        sig_type: sig.clone(),
-                        field_values: current_fields.clone(),
-                    });
-                    current_fields.clear();
-                }
-                // Parse the sig type from the atom label (e.g. "User$0" → "User")
-                let sig_type = label
-                    .split('$')
-                    .next()
-                    .unwrap_or(&label)
-                    .to_string();
-                current_atom = Some(label);
-                current_sig = Some(sig_type);
+        if trimmed.starts_with("<atom")
+            && trimmed.contains("label=")
+            && let Some(label) = extract_xml_attr(trimmed, "label")
+        {
+            // If we were tracking a previous atom, save it
+            if let (Some(atom), Some(sig)) = (&current_atom, &current_sig) {
+                bindings.push(AtomBinding {
+                    atom: atom.clone(),
+                    sig_type: sig.clone(),
+                    field_values: current_fields.clone(),
+                });
+                current_fields.clear();
             }
+            // Parse the sig type from the atom label (e.g. "User$0" → "User")
+            let sig_type = label.split('$').next().unwrap_or(&label).to_string();
+            current_atom = Some(label);
+            current_sig = Some(sig_type);
         }
     }
 
@@ -295,9 +292,9 @@ mod tests {
         let results = parse_analyzer_output(output);
         assert_eq!(results.len(), 1);
         match &results[0] {
-            ModelCheckResult::NoCounterexample {
-                assertion_name, ..
-            } => assert_eq!(assertion_name, "unique_emails"),
+            ModelCheckResult::NoCounterexample { assertion_name, .. } => {
+                assert_eq!(assertion_name, "unique_emails")
+            }
             _ => panic!("Expected NoCounterexample"),
         }
     }
@@ -309,9 +306,9 @@ mod tests {
         let results = parse_analyzer_output(output);
         assert_eq!(results.len(), 1);
         match &results[0] {
-            ModelCheckResult::CounterexampleFound {
-                assertion_name, ..
-            } => assert_eq!(assertion_name, "no_orphans"),
+            ModelCheckResult::CounterexampleFound { assertion_name, .. } => {
+                assert_eq!(assertion_name, "no_orphans")
+            }
             _ => panic!("Expected CounterexampleFound"),
         }
     }
