@@ -1,41 +1,40 @@
-;; SPDX-License-Identifier: PMPL-1.0-or-later
-;; Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
-;; STATE.a2ml — Current project state for alloyiser
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# STATE.a2ml — Alloyiser project state
+[metadata]
+project = "alloyiser"
+version = "0.1.0"
+last-updated = "2026-03-21"
+status = "active"
+session = "converted from scheme — 2026-04-11"
 
-(state
-  (metadata
-    (version "0.1.0")
-    (last-updated "2026-03-21")
-    (author "Jonathan D.A. Jewell"))
+[project-context]
+name = "Alloyiser"
+purpose = """Extract formal models from API specs (OpenAPI/GraphQL/gRPC) and verify invariants with the Alloy Analyzer via SAT solving"""
+completion-percentage = 45
 
-  (project-context
-    (name "alloyiser")
-    (description "Extract formal models from API specs (OpenAPI/GraphQL/gRPC) and verify invariants with the Alloy Analyzer via SAT solving")
-    (status "alpha")
-    (priority "medium")
-    (ecosystem "-iser family (https://github.com/hyperpolymath/iseriser)"))
+[position]
+phase = "phase-1-complete"   # design | implementation | testing | maintenance | archived
+maturity = "experimental"  # experimental | alpha | beta | production | lts
 
-  (current-position
-    (phase "phase-1-complete")
-    (completion-percentage 45)
-    (milestone "Phase 1 complete — OpenAPI parser, SpecModel IR, Alloy codegen, Analyzer integration")
-    (what-changed
-      "2026-03-21: Phase 1 complete. OpenAPI parser, SpecModel IR, Alloy codegen (.als), Analyzer integration, bespoke manifest parsing. Integration tests passing."))
+[route-to-mvp]
+milestones = [
+  # No milestones recorded
+]
 
-  (route-to-mvp
-    (step 1 "DONE — OpenAPI 3.x parser extracting entities/relations/constraints")
-    (step 2 "DONE — SpecModel intermediate representation")
-    (step 3 "DONE — Alloy codegen (.als with sig/field/fact/assert/check)")
-    (step 4 "DONE — Alloy Analyzer integration for SAT solving")
-    (step 5 "DONE — Bespoke manifest parsing and CLI")
-    (step 6 "TODO — Multi-format support (GraphQL, gRPC, JSON Schema, AsyncAPI)")
-    (step 7 "TODO — Idris2 proofs for model extraction semantics preservation")
-    (step 8 "TODO — PanLL panel and BoJ cartridge integration"))
+[blockers-and-issues]
+issues = [
+  "Alloy Analyzer (Java) not installed on dev machine — .als output verified by structure",
+]
 
-  (blockers-and-issues
-    (note "Alloy Analyzer (Java) not installed on dev machine — .als output verified by structure"))
+[critical-next-actions]
+actions = [
+  "Add GraphQL and gRPC parsers for multi-format support",
+  "Write Idris2 proofs for model extraction correctness",
+  "Create petstore.yaml end-to-end example with Alloy verification",
+]
 
-  (critical-next-actions
-    (action "Add GraphQL and gRPC parsers for multi-format support")
-    (action "Write Idris2 proofs for model extraction correctness")
-    (action "Create petstore.yaml end-to-end example with Alloy verification")))
+[maintenance-status]
+last-run-utc = "2026-03-21T00:00:00Z"
+last-result = "unknown"  # unknown | pass | warn | fail

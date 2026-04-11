@@ -1,56 +1,20 @@
-;; SPDX-License-Identifier: PMPL-1.0-or-later
-;; Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
-;; ECOSYSTEM.a2ml — Ecosystem position for alloyiser
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# ECOSYSTEM.a2ml — Alloyiser ecosystem position
+[metadata]
+version = "0.1.0"
+last-updated = "2026-04-11"
 
-(ecosystem
-  (version "0.1.0")
-  (name "alloyiser")
-  (type "tool")
-  (purpose "Extract formal models from API specifications (OpenAPI, GraphQL, gRPC) and verify invariants using the Alloy Analyzer's SAT solver")
+[project]
+name = "Alloyiser"
+purpose = "Extract formal models from API specifications (OpenAPI, GraphQL, gRPC) and verify invariants using the Alloy Analyzer's SAT solver"
+role = "tool"
 
-  (position-in-ecosystem
-    (family "-iser acceleration frameworks")
-    (meta-framework "iseriser")
-    (relationship "sibling")
-    (domain "formal verification of API designs")
-    (unique-value "bridges API specification formats to Alloy's relational logic — finds design bugs before implementation")
-    (top-3 ("typedqliser" "chapeliser" "verisimiser")))
+[position-in-ecosystem]
+category = ""
 
-  (related-projects
-    (project "iseriser"
-      (relationship "meta-framework")
-      (description "Generates new -iser project scaffolding"))
-    (project "typedqliser"
-      (relationship "sibling-priority-1")
-      (description "Formal type safety for any query language"))
-    (project "chapeliser"
-      (relationship "sibling-priority-2")
-      (description "Chapel distributed computing acceleration"))
-    (project "verisimiser"
-      (relationship "sibling-priority-3")
-      (description "VeriSimDB octad database augmentation"))
-    (project "squeakwell"
-      (relationship "sibling")
-      (description "Database recovery via constraint propagation"))
-    (project "proven"
-      (relationship "dependency")
-      (description "Shared Idris2 verified library — alloyiser uses proven types for model soundness proofs"))
-    (project "typell"
-      (relationship "dependency")
-      (description "Type theory engine — could power alloyiser's constraint language"))
-    (project "boj-server"
-      (relationship "integration-target")
-      (description "BoJ MCP server — alloyiser will be a cartridge for on-demand spec verification"))
-    (project "panll"
-      (relationship "integration-target")
-      (description "PanLL workspace — alloyiser will provide a panel for visualising Alloy instance graphs")))
-
-  (external-dependencies
-    (dependency "alloy6"
-      (type "runtime")
-      (description "MIT Alloy 6 Analyzer JAR — SAT solving via Kodkod/SAT4J")
-      (url "https://alloytools.org"))
-    (dependency "openapiv3"
-      (type "build")
-      (description "Rust crate for parsing OpenAPI 3.x specifications")
-      (url "https://crates.io/crates/openapiv3"))))
+[related-projects]
+projects = [
+  # No related projects recorded
+]
