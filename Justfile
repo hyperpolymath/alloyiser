@@ -2,6 +2,8 @@
 # alloyiser — Extract formal models from API specs and verify with Alloy
 
 # Default: build and test
+import? "contractile.just"
+
 default: build test
 
 # Build release binary
