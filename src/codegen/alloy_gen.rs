@@ -125,7 +125,7 @@ pub fn infer_structural_facts(signatures: &[Signature]) -> Vec<Fact> {
                         "all s: {} | s.{} in {}",
                         sig.name, field.name, field.target
                     )
-                    .unwrap();
+                    .expect("TODO: handle error");
                     facts.push(Fact {
                         name: Some(format!("{}_{}_integrity", sig.name, field.name)),
                         body,

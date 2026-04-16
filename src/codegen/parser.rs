@@ -461,7 +461,7 @@ components:
         - title
         - author
 "#;
-        let schema = parse_openapi_yaml(yaml).unwrap();
+        let schema = parse_openapi_yaml(yaml).expect("TODO: handle error");
         assert_eq!(schema.schemas.len(), 2);
 
         let user = &schema.schemas["User"];

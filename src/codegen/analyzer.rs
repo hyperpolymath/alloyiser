@@ -330,7 +330,7 @@ mod tests {
   <atom label="Post$0"/>
 </instance>
 "#;
-        let ce = parse_counterexample_xml(xml).unwrap();
+        let ce = parse_counterexample_xml(xml).expect("TODO: handle error");
         assert_eq!(ce.atom_bindings.len(), 2);
         assert_eq!(ce.atom_bindings[0].atom, "User$0");
         assert_eq!(ce.atom_bindings[0].sig_type, "User");

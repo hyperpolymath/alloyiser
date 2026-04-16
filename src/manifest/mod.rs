@@ -274,7 +274,7 @@ scope = 5
 solver = "sat4j"
 max-scope = 10
 "#;
-        let manifest: Manifest = toml::from_str(toml_str).unwrap();
+        let manifest: Manifest = toml::from_str(toml_str).expect("TODO: handle error");
         assert_eq!(manifest.project.name, "test-api");
         assert_eq!(manifest.specs.len(), 1);
         assert_eq!(manifest.specs[0].format, SpecFormat::Openapi);
@@ -290,7 +290,7 @@ max-scope = 10
 [project]
 name = "minimal"
 "#;
-        let manifest: Manifest = toml::from_str(toml_str).unwrap();
+        let manifest: Manifest = toml::from_str(toml_str).expect("TODO: handle error");
         assert!(manifest.specs.is_empty());
         assert!(manifest.assertions.is_empty());
         assert_eq!(manifest.alloy.solver, "sat4j");
