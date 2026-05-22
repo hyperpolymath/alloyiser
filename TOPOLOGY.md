@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: PMPL-1.0-or-later -->
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 <!-- Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk> -->
 # TOPOLOGY.md — alloyiser repository structure
 
@@ -11,7 +11,7 @@ alloyiser/
 ├── contractile.just                # Contractile CLI integration recipes
 ├── flake.nix                       # Nix flake for reproducible builds
 ├── guix.scm                        # GNU Guix package definition
-├── LICENSE                         # PMPL-1.0-or-later full text
+├── LICENSE                         # MPL-2.0 full text
 ├── README.adoc                     # Architecture overview and usage guide
 ├── ROADMAP.adoc                    # Phased implementation plan
 ├── TOPOLOGY.md                     # THIS FILE — repository map
