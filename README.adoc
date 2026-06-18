@@ -6,6 +6,8 @@ Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 :icons: font
 :source-highlighter: rouge
 
+image:https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink?logo=github[Sponsor,link=https://github.com/sponsors/hyperpolymath]
+
 == What Is Alloyiser?
 
 Alloyiser takes **API specifications** (OpenAPI 3.x, GraphQL schemas, gRPC `.proto` files)
