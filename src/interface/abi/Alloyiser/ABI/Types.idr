@@ -20,6 +20,7 @@ import Data.Bits
 import Data.So
 import Data.Vect
 import Data.List
+import Decidable.Equality
 
 %default total
 
@@ -31,12 +32,12 @@ import Data.List
 public export
 data Platform = Linux | Windows | MacOS | BSD | WASM
 
-||| Compile-time platform detection
+||| The platform this build targets. Defaults to Linux; the Rust/Zig build
+||| layer overrides this via the codegen target selection. (Previously a
+||| `%runElab` stub that required ElabReflection and did not compile.)
 public export
 thisPlatform : Platform
-thisPlatform =
-  %runElab do
-    pure Linux  -- Default; override with compiler flags
+thisPlatform = Linux
 
 --------------------------------------------------------------------------------
 -- Alloy Multiplicity
@@ -52,6 +53,15 @@ thisPlatform =
 public export
 data Multiplicity = One | Lone | Set | Seq
 
+||| Structural equality on multiplicities (needed for field membership checks)
+public export
+Eq Multiplicity where
+  One  == One  = True
+  Lone == Lone = True
+  Set  == Set  = True
+  Seq  == Seq  = True
+  _    == _    = False
+
 ||| Convert multiplicity to its Alloy keyword string representation
 public export
 showMultiplicity : Multiplicity -> String
@@ -60,14 +70,27 @@ showMultiplicity Lone = "lone"
 showMultiplicity Set  = "set"
 showMultiplicity Seq  = "seq"
 
-||| Multiplicities are decidably equal
+||| Multiplicities are decidably equal. The off-diagonal cases discharge the
+||| disequality explicitly; the previous `decEq _ _ = No absurd` did not
+||| compile (no `Uninhabited (x = y)` instance exists for these).
 public export
 DecEq Multiplicity where
   decEq One One   = Yes Refl
   decEq Lone Lone = Yes Refl
   decEq Set Set   = Yes Refl
   decEq Seq Seq   = Yes Refl
-  decEq _ _       = No absurd
+  decEq One Lone = No (\case Refl impossible)
+  decEq One Set = No (\case Refl impossible)
+  decEq One Seq = No (\case Refl impossible)
+  decEq Lone One = No (\case Refl impossible)
+  decEq Lone Set = No (\case Refl impossible)
+  decEq Lone Seq = No (\case Refl impossible)
+  decEq Set One = No (\case Refl impossible)
+  decEq Set Lone = No (\case Refl impossible)
+  decEq Set Seq = No (\case Refl impossible)
+  decEq Seq One = No (\case Refl impossible)
+  decEq Seq Lone = No (\case Refl impossible)
+  decEq Seq Set = No (\case Refl impossible)
 
 --------------------------------------------------------------------------------
 -- Alloy Signature (Entity)
@@ -114,6 +137,14 @@ record AlloyField where
   targetSig : String
   ||| Multiplicity: how many targets per source atom
   multiplicity : Multiplicity
+
+||| Structural equality on fields (needed for field membership checks in
+||| `AllFieldsResolved`).
+public export
+Eq AlloyField where
+  a == b = a.name == b.name
+        && a.targetSig == b.targetSig
+        && a.multiplicity == b.multiplicity
 
 ||| A valid field must reference a non-empty target signature
 public export
@@ -281,7 +312,9 @@ resultToInt ModelParseError     = 5
 resultToInt SolverTimeout       = 6
 resultToInt CounterexampleFound = 7
 
-||| Results are decidably equal
+||| Results are decidably equal. The off-diagonal cases discharge the
+||| disequality explicitly; the previous `decEq _ _ = No absurd` did not
+||| compile (no `Uninhabited (x = y)` instance exists for these).
 public export
 DecEq Result where
   decEq Ok Ok                                   = Yes Refl
@@ -292,7 +325,62 @@ DecEq Result where
   decEq ModelParseError ModelParseError         = Yes Refl
   decEq SolverTimeout SolverTimeout             = Yes Refl
   decEq CounterexampleFound CounterexampleFound = Yes Refl
-  decEq _ _                                     = No absurd
+  decEq Ok Error = No (\case Refl impossible)
+  decEq Ok InvalidParam = No (\case Refl impossible)
+  decEq Ok OutOfMemory = No (\case Refl impossible)
+  decEq Ok NullPointer = No (\case Refl impossible)
+  decEq Ok ModelParseError = No (\case Refl impossible)
+  decEq Ok SolverTimeout = No (\case Refl impossible)
+  decEq Ok CounterexampleFound = No (\case Refl impossible)
+  decEq Error Ok = No (\case Refl impossible)
+  decEq Error InvalidParam = No (\case Refl impossible)
+  decEq Error OutOfMemory = No (\case Refl impossible)
+  decEq Error NullPointer = No (\case Refl impossible)
+  decEq Error ModelParseError = No (\case Refl impossible)
+  decEq Error SolverTimeout = No (\case Refl impossible)
+  decEq Error CounterexampleFound = No (\case Refl impossible)
+  decEq InvalidParam Ok = No (\case Refl impossible)
+  decEq InvalidParam Error = No (\case Refl impossible)
+  decEq InvalidParam OutOfMemory = No (\case Refl impossible)
+  decEq InvalidParam NullPointer = No (\case Refl impossible)
+  decEq InvalidParam ModelParseError = No (\case Refl impossible)
+  decEq InvalidParam SolverTimeout = No (\case Refl impossible)
+  decEq InvalidParam CounterexampleFound = No (\case Refl impossible)
+  decEq OutOfMemory Ok = No (\case Refl impossible)
+  decEq OutOfMemory Error = No (\case Refl impossible)
+  decEq OutOfMemory InvalidParam = No (\case Refl impossible)
+  decEq OutOfMemory NullPointer = No (\case Refl impossible)
+  decEq OutOfMemory ModelParseError = No (\case Refl impossible)
+  decEq OutOfMemory SolverTimeout = No (\case Refl impossible)
+  decEq OutOfMemory CounterexampleFound = No (\case Refl impossible)
+  decEq NullPointer Ok = No (\case Refl impossible)
+  decEq NullPointer Error = No (\case Refl impossible)
+  decEq NullPointer InvalidParam = No (\case Refl impossible)
+  decEq NullPointer OutOfMemory = No (\case Refl impossible)
+  decEq NullPointer ModelParseError = No (\case Refl impossible)
+  decEq NullPointer SolverTimeout = No (\case Refl impossible)
+  decEq NullPointer CounterexampleFound = No (\case Refl impossible)
+  decEq ModelParseError Ok = No (\case Refl impossible)
+  decEq ModelParseError Error = No (\case Refl impossible)
+  decEq ModelParseError InvalidParam = No (\case Refl impossible)
+  decEq ModelParseError OutOfMemory = No (\case Refl impossible)
+  decEq ModelParseError NullPointer = No (\case Refl impossible)
+  decEq ModelParseError SolverTimeout = No (\case Refl impossible)
+  decEq ModelParseError CounterexampleFound = No (\case Refl impossible)
+  decEq SolverTimeout Ok = No (\case Refl impossible)
+  decEq SolverTimeout Error = No (\case Refl impossible)
+  decEq SolverTimeout InvalidParam = No (\case Refl impossible)
+  decEq SolverTimeout OutOfMemory = No (\case Refl impossible)
+  decEq SolverTimeout NullPointer = No (\case Refl impossible)
+  decEq SolverTimeout ModelParseError = No (\case Refl impossible)
+  decEq SolverTimeout CounterexampleFound = No (\case Refl impossible)
+  decEq CounterexampleFound Ok = No (\case Refl impossible)
+  decEq CounterexampleFound Error = No (\case Refl impossible)
+  decEq CounterexampleFound InvalidParam = No (\case Refl impossible)
+  decEq CounterexampleFound OutOfMemory = No (\case Refl impossible)
+  decEq CounterexampleFound NullPointer = No (\case Refl impossible)
+  decEq CounterexampleFound ModelParseError = No (\case Refl impossible)
+  decEq CounterexampleFound SolverTimeout = No (\case Refl impossible)
 
 --------------------------------------------------------------------------------
 -- Opaque Handles
@@ -305,12 +393,15 @@ public export
 data Handle : Type where
   MkHandle : (ptr : Bits64) -> {auto 0 nonNull : So (ptr /= 0)} -> Handle
 
-||| Safely create a handle from a pointer value.
-||| Returns Nothing if pointer is null.
+||| Safely create a handle from a pointer value. Uses `choose` to obtain a
+||| real `So (ptr /= 0)` witness for the non-null branch. (Previously
+||| `Just (MkHandle ptr)` left the `auto` proof unsolved and did not compile.)
 public export
 createHandle : Bits64 -> Maybe Handle
-createHandle 0 = Nothing
-createHandle ptr = Just (MkHandle ptr)
+createHandle ptr =
+  case choose (ptr /= 0) of
+    Left ok => Just (MkHandle ptr {nonNull = ok})
+    Right _ => Nothing
 
 ||| Extract raw pointer value from handle (for FFI calls)
 public export

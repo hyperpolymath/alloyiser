@@ -65,6 +65,11 @@ flake.lock
 # Chapel
 *.chpl.tmp.*
 
+# Idris2 (ABI proof build artifacts)
+**/build/
+*.ttc
+*.ttm
+
 # Secrets
 .env
 .env.*

@@ -1,0 +1,11 @@
+-- SPDX-License-Identifier: MPL-2.0
+-- Idris2 package for the alloyiser ABI formal proofs.
+-- Build/check with:  idris2 --build alloyiser-abi.ipkg   (from src/interface/abi/)
+package alloyiser-abi
+
+sourcedir = "."
+
+modules = Alloyiser.ABI.Types
+        , Alloyiser.ABI.Layout
+        , Alloyiser.ABI.Foreign
+        , Alloyiser.ABI.Proofs
