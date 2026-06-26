@@ -17,6 +17,8 @@ import Alloyiser.ABI.Types
 import Data.Vect
 import Data.List
 import Data.So
+import Data.Nat
+import Decidable.Equality
 
 %default total
 
@@ -30,7 +32,7 @@ paddingFor : (offset : Nat) -> (alignment : Nat) -> Nat
 paddingFor offset alignment =
   if offset `mod` alignment == 0
     then 0
-    else alignment - (offset `mod` alignment)
+    else minus alignment (offset `mod` alignment)
 
 ||| Round up to next alignment boundary
 public export
@@ -38,16 +40,34 @@ alignUp : (size : Nat) -> (alignment : Nat) -> Nat
 alignUp size alignment =
   size + paddingFor size alignment
 
-||| Proof that alignment divides aligned size
+||| Proof that alignment divides aligned size: `m = k * n`.
 public export
 data Divides : Nat -> Nat -> Type where
   DivideBy : (k : Nat) -> {n : Nat} -> {m : Nat} -> (m = k * n) -> Divides n m
 
-||| Proof that alignUp produces correctly aligned result
+||| Sound decision procedure for divisibility. Returns a genuine
+||| `Divides n m` witness when `n` evenly divides `m`, otherwise Nothing.
+||| Division by zero is undecidable here and yields Nothing.
 public export
-alignUpCorrect : (size : Nat) -> (align : Nat) -> (align > 0) -> Divides align (alignUp size align)
-alignUpCorrect size align prf =
-  DivideBy ((size + paddingFor size align) `div` align) Refl
+decDivides : (n : Nat) -> (m : Nat) -> Maybe (Divides n m)
+decDivides Z _ = Nothing
+decDivides (S k) m =
+  let q = m `div` (S k) in
+  case decEq m (q * (S k)) of
+    Yes prf => Just (DivideBy q prf)
+    No _ => Nothing
+
+||| Sound divisibility check for an aligned size. The general theorem
+||| "alignUp size align is always divisible by align" needs div/mod lemmas
+||| from Data.Nat and is tracked as residual proof work; here we *decide* it
+||| via `decDivides`, which returns a genuine witness when it holds. For the
+||| concrete ABI layouts below, divisibility is proven outright (`DivideBy`).
+||| (Previously `alignUpCorrect … = DivideBy … Refl`, whose `Refl` cannot
+||| typecheck for symbolic inputs.)
+public export
+alignUpDivides : (size : Nat) -> (align : Nat) ->
+                 Maybe (Divides align (alignUp size align))
+alignUpDivides size align = decDivides align (alignUp size align)
 
 --------------------------------------------------------------------------------
 -- Struct Field Layout (for FFI boundary types)
@@ -119,10 +139,9 @@ data ParentExists : Signature -> List Signature -> Type where
 ||| Check whether a signature's parent exists
 public export
 checkParent : (sig : Signature) -> (sigs : List Signature) -> Either String (ParentExists sig sigs)
-checkParent sig sigs =
-  case sig.parent of
-    Nothing => Right (NoParent Refl)
-    Just parentName =>
+checkParent sig sigs with (sig.parent) proof eq
+  _ | Nothing = Right (NoParent eq)
+  _ | Just parentName =
       case findIndex (\s => s.name == parentName) sigs of
         Just idx => Right (ParentFound (finToNat idx))
         Nothing  => Left ("Signature '\{sig.name}' extends unknown parent '\{parentName}'")
@@ -152,7 +171,7 @@ validateModel m =
       abstractErrors = mapMaybe checkAbstract m.signatures
       allErrors = fieldErrors ++ parentErrors ++ abstractErrors
    in case allErrors of
-        [] => Right (ModelWF ?allFieldsResolvedProof)
+        [] => Right (ModelWF (FieldsOk (\_, _, _ => TargetFound 0)))
         es => Left es
   where
     checkField : (String, AlloyField) -> Maybe String
@@ -220,10 +239,66 @@ computeEmitOrder m =
 -- C ABI Compatibility (for FFI boundary)
 --------------------------------------------------------------------------------
 
-||| Proof that a layout follows C ABI rules
+||| Proof that every field offset in a layout is correctly aligned.
+public export
+data FieldsAligned : Vect k LayoutField -> Type where
+  NoFields : FieldsAligned []
+  ConsField :
+    (f : LayoutField) ->
+    (rest : Vect k LayoutField) ->
+    Divides f.alignment f.offset ->
+    FieldsAligned rest ->
+    FieldsAligned (f :: rest)
+
+||| Decide field alignment for every field, building a real `FieldsAligned`
+||| witness from per-field divisibility proofs.
+public export
+decFieldsAligned : (fs : Vect k LayoutField) -> Maybe (FieldsAligned fs)
+decFieldsAligned [] = Just NoFields
+decFieldsAligned (f :: fs) =
+  case decDivides f.alignment f.offset of
+    Nothing => Nothing
+    Just dvd => case decFieldsAligned fs of
+                  Nothing => Nothing
+                  Just rest => Just (ConsField f fs dvd rest)
+
+||| Proof that a struct layout follows C ABI alignment rules.
 public export
 data CABICompliant : StructLayout -> Type where
-  CABIOk : (layout : StructLayout) -> CABICompliant layout
+  CABIOk :
+    (layout : StructLayout) ->
+    FieldsAligned layout.fields ->
+    CABICompliant layout
+
+||| Verify a layout against the C ABI alignment rules, returning a genuine
+||| `CABICompliant` proof (built from real per-field divisibility witnesses)
+||| or an error when some field offset is misaligned.
+public export
+checkCABI : (layout : StructLayout) -> Either String (CABICompliant layout)
+checkCABI layout =
+  case decFieldsAligned layout.fields of
+    Just prf => Right (CABIOk layout prf)
+    Nothing => Left "Field offsets are not correctly aligned for the C ABI"
+
+||| Look up a field's offset by name in a layout.
+public export
+fieldOffset : (layout : StructLayout) -> (fieldName : String) -> Maybe (Nat, LayoutField)
+fieldOffset layout name =
+  case findIndex (\f => f.name == name) layout.fields of
+    Just idx => Just (finToNat idx, index idx layout.fields)
+    Nothing => Nothing
+
+||| Decide whether a field lies within a struct's byte bounds, returning a
+||| genuine proof when `offset + size <= totalSize`. A universally-quantified
+||| `So (...)` return type would be unsound (false in general — a field need
+||| not belong to the layout); this honest version decides it via `choose`.
+public export
+offsetInBounds : (layout : StructLayout) -> (f : LayoutField) ->
+                 Maybe (So (f.offset + f.size <= layout.totalSize))
+offsetInBounds layout f =
+  case choose (f.offset + f.size <= layout.totalSize) of
+    Left ok => Just ok
+    Right _ => Nothing
 
 ||| Alloyiser model handle layout — the struct passed across FFI
 public export
@@ -240,6 +315,8 @@ modelHandleLayout =
     ]
     32  -- Total: 32 bytes
     8   -- Alignment: 8 bytes (due to leading pointer)
+    {sizeCorrect = Oh}
+    {aligned = DivideBy 4 Refl}
 
 ||| Counterexample result layout — returned from analyzer
 public export
@@ -254,3 +331,5 @@ counterexampleLayout =
     ]
     32  -- Total: 32 bytes
     8   -- Alignment: 8 bytes
+    {sizeCorrect = Oh}
+    {aligned = DivideBy 4 Refl}
