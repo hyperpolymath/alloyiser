@@ -9,3 +9,4 @@ modules = Alloyiser.ABI.Types
         , Alloyiser.ABI.Layout
         , Alloyiser.ABI.Foreign
         , Alloyiser.ABI.Proofs
+        , Alloyiser.ABI.Semantics
