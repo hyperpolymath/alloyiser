@@ -12,3 +12,4 @@ modules = Alloyiser.ABI.Types
         , Alloyiser.ABI.Semantics
         , Alloyiser.ABI.Invariants
         , Alloyiser.ABI.FfiSeam
+        , Alloyiser.ABI.Capstone
