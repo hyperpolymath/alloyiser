@@ -11,3 +11,4 @@ modules = Alloyiser.ABI.Types
         , Alloyiser.ABI.Proofs
         , Alloyiser.ABI.Semantics
         , Alloyiser.ABI.Invariants
+        , Alloyiser.ABI.FfiSeam
