@@ -10,3 +10,4 @@ modules = Alloyiser.ABI.Types
         , Alloyiser.ABI.Foreign
         , Alloyiser.ABI.Proofs
         , Alloyiser.ABI.Semantics
+        , Alloyiser.ABI.Invariants
