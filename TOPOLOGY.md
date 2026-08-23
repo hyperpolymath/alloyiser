@@ -9,7 +9,7 @@ alloyiser/
 ├── Justfile                        # Task runner (build, test, lint, assail)
 ├── Containerfile                   # OCI container build (Chainguard base)
 ├── contractile.just                # Contractile CLI integration recipes
-├── flake.nix                       # Nix flake for reproducible builds
+├── flake.guix                       # Guix flake for reproducible builds
 ├── guix.scm                        # GNU Guix package definition
 ├── LICENSE                         # MPL-2.0 full text
 ├── README.adoc                     # Architecture overview and usage guide

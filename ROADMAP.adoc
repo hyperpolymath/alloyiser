@@ -99,4 +99,4 @@ Make alloyiser useful in real development workflows.
 * [ ] **Watch mode**: re-run on spec file changes (useful during API design sessions)
 * [ ] **Diff mode**: compare two spec versions, show new/removed/changed invariants
 * [ ] **crates.io publish**: `cargo install alloyiser`
-* [ ] **Nix/Guix packages**: reproducible builds via flake.nix and guix.scm
+* [ ] **Guix/Guix packages**: reproducible builds via flake.guix and guix.scm
