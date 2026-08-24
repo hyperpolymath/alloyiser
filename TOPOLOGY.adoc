@@ -1,8 +1,6 @@
-<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
-<!-- Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk> -->
-# TOPOLOGY.md — alloyiser repository structure
+== TOPOLOGY.md — alloyiser repository structure
 
-```
+....
 alloyiser/
 ├── 0-AI-MANIFEST.a2ml              # AI agent entry point (read first)
 ├── Cargo.toml                      # Rust crate manifest
@@ -121,11 +119,11 @@ alloyiser/
 ├── .gitignore                      # Git ignore rules
 ├── .guix-channel                   # Guix channel config
 └── .tool-versions                  # asdf tool versions
-```
+....
 
-## Data Flow
+=== Data Flow
 
-```
+....
 User writes alloyiser.toml
        │
        ▼
@@ -148,4 +146,4 @@ Alloy Analyzer          SAT solving finds counterexamples
        │
        ▼
 Counterexample Report   human-readable + JSON output
-```
+....
