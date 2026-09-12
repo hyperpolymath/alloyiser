@@ -87,7 +87,7 @@ alloyiser/
 │   └── traceability/               # Requirements traceability
 │
 ├── .machine_readable/              # ALL machine-readable metadata
-│   ├── 6a2/                        # A2ML state files
+│   ├── descriptiles/               # A2ML state files
 │   │   ├── STATE.a2ml              # Current project state
 │   │   ├── META.a2ml               # Architecture decisions
 │   │   ├── ECOSYSTEM.a2ml          # Ecosystem position
