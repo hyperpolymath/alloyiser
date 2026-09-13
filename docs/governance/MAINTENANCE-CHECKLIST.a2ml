@@ -2,6 +2,7 @@
 # Cross-repo maintenance baseline (machine-readable canonical)
 
 [metadata]
+project = "alloyiser"
 version = "1.1.0"
 last-updated = "2026-02-24"
 scope = "cross-repo"
@@ -67,7 +68,7 @@ compliance-seams-check = true
 exception-register-required = true
 exception-bounded-scope-required = true
 policy-drift-contamination-check = true
-example-drift-risk = "single TypeScript exception causing broad ReScript->TypeScript migration"
+example-drift-risk = "single TypeScript exception causing broad AffineScript->TypeScript migration"
 compliance-tooling = "panic-attack"
 effects-tooling = "ecological checking with sustainabot guidance"
 

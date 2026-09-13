@@ -1,15 +1,13 @@
-<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
-<!-- Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk> -->
-# TOPOLOGY.md — alloyiser repository structure
+== TOPOLOGY.md — alloyiser repository structure
 
-```
+....
 alloyiser/
 ├── 0-AI-MANIFEST.a2ml              # AI agent entry point (read first)
 ├── Cargo.toml                      # Rust crate manifest
 ├── Justfile                        # Task runner (build, test, lint, assail)
 ├── Containerfile                   # OCI container build (Chainguard base)
 ├── contractile.just                # Contractile CLI integration recipes
-├── flake.nix                       # Nix flake for reproducible builds
+├── flake.guix                       # Guix flake for reproducible builds
 ├── guix.scm                        # GNU Guix package definition
 ├── LICENSE                         # MPL-2.0 full text
 ├── README.adoc                     # Architecture overview and usage guide
@@ -89,7 +87,7 @@ alloyiser/
 │   └── traceability/               # Requirements traceability
 │
 ├── .machine_readable/              # ALL machine-readable metadata
-│   ├── 6a2/                        # A2ML state files
+│   ├── descriptiles/               # A2ML state files
 │   │   ├── STATE.a2ml              # Current project state
 │   │   ├── META.a2ml               # Architecture decisions
 │   │   ├── ECOSYSTEM.a2ml          # Ecosystem position
@@ -121,11 +119,11 @@ alloyiser/
 ├── .gitignore                      # Git ignore rules
 ├── .guix-channel                   # Guix channel config
 └── .tool-versions                  # asdf tool versions
-```
+....
 
-## Data Flow
+=== Data Flow
 
-```
+....
 User writes alloyiser.toml
        │
        ▼
@@ -148,4 +146,4 @@ Alloy Analyzer          SAT solving finds counterexamples
        │
        ▼
 Counterexample Report   human-readable + JSON output
-```
+....

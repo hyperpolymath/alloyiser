@@ -1,3 +1,4 @@
+K9!
 # SPDX-License-Identifier: MPL-2.0
 # deploy.k9.ncl — {{PROJECT_NAME}} deployment component (Hunt level)
 #
@@ -13,7 +14,8 @@
 #   k9-svc deploy container/deploy.k9.ncl --env production
 
 # The component's pedigree (self-description across five layers)
-let component_pedigree = {
+let
+  pedigree = {
   # ─────────────────────────────────────────────────────────────
   # L1: The Snout — Identity
   # ─────────────────────────────────────────────────────────────
@@ -39,6 +41,7 @@ let component_pedigree = {
   # L3: The Leash — Security
   # ─────────────────────────────────────────────────────────────
   security = {
+    leash = 'Hunt,
     trust_level = 'Hunt,
     allow_network = true,
     allow_filesystem_write = true,
@@ -143,7 +146,7 @@ echo "K9: Rollback complete."
 
 # Export the component
 {
-  pedigree = component_pedigree,
+  pedigree = pedigree,
   deployment = deployment,
   scripts = scripts,
 

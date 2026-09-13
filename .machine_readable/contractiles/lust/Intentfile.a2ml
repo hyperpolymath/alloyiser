@@ -16,7 +16,7 @@ design philosophy — not current state, but target state.
 
 ### reproducible-builds
 - description: Builds should be bit-for-bit reproducible
-- target: Guix + Nix + Containerfile
+- target: Guix + Guix + Containerfile
 - status: aspiration
 
 ### zero-dangerous-patterns

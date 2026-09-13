@@ -18,7 +18,7 @@ target = "binary"  # container | binary | library | wasm
 # Users can set ALLOY_JAR environment variable or configure in alloyiser.toml
 
 [incident-response]
-# 1. Check .machine_readable/6a2/STATE.a2ml for current status
+# 1. Check .machine_readable/descriptiles/STATE.a2ml for current status
 # 2. Review recent commits and CI results
 # 3. Run `just validate` to check compliance
 # 4. Run `just assail` to run panic-attacker pre-commit scan

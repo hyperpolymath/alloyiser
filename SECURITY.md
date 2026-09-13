@@ -1,21 +1,13 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Security Policy
-
-## Supported Versions
-
-| Version | Supported |
-|---------|-----------|
-| 0.1.x   | ✅        |
 
 ## Reporting a Vulnerability
 
-Please report security vulnerabilities to: j.d.a.jewell@open.ac.uk
+**Email:** j.d.a.jewell@open.ac.uk
 
-Do NOT open a public issue for security vulnerabilities.
+**Response timeline:**
+- Acknowledgement within 48 hours
+- Initial assessment within 7 days
+- Fix or mitigation within 90 days
 
-## Response Time
-
-We aim to respond within 48 hours and provide a fix within 7 days for critical issues.
-
-## Scope
-
-This policy covers the alloyiser CLI tool and its generated artifacts.
+**Safe harbour:** We will not pursue legal action against security researchers who follow responsible disclosure.
