@@ -120,7 +120,7 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 [optional footer]
 
-### Signed commits
+## Signed commits
 
 Every commit that reaches the default branch must be signed; a ruleset refuses
 unsigned pushes. Estate policy:
